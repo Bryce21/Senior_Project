@@ -1,6 +1,7 @@
 import React from 'react';
 import Konva_Wrapper from './konva_wrapper'
 import Info from './info.js'
+import * as algos from '../algos.js'
 
 
 export default class Main extends React.Component {
@@ -158,27 +159,47 @@ export default class Main extends React.Component {
     handleSubmit = async e => {
         e.preventDefault();
         console.log('Handle submit called');
-        this.setState({processing: true});
-        let body = JSON.stringify({
+        let rectangles_to_use = []
+        for(let i = 0; i < this.state.rectangles.length; i++){
+            for(let x=0; x < parseInt(this.state.rectangles[i].quantity); x++){
+                rectangles_to_use.push(this.state.rectangles[i])
+            }
+        }
+
+        let body = {
             area_length: this.state.area_length,
             area_height: this.state.area_height,
-            rectangles: this.state.rectangles,
+            rectangles: rectangles_to_use,
             algoSelectorValue: this.state.algoSelectorValue
-        });
-        await fetch('/api/algorithms', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: body,
-        }).then((response) => {
-            response.text().then((text) => {
-                console.log(text);
-                let data = JSON.parse(text);
-                this.setState({points: data})
-            });
+        };
+        console.log(body)
 
-        });
+
+        console.log(typeof(body))
+        // switch(body.algoSelectorValue){
+        //     case(''): break;
+        //     case(''): break;
+        //     case(''): break
+        // }
+        let points = algos.guillotine(body.rectangles, body.area_length, body.area_height);
+        console.log(points)
+        console.log(typeof(points))
+        this.setState({points: points})
+        // await fetch('/api/algorithms', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: body,
+        // }).then((response) => {
+        //     response.text().then((text) => {
+        //         console.log(text);
+        //         let data = JSON.parse(text);
+        //         this.setState({points: data})
+        //     });
+        //
+        // });
+
 
     };
 }
