@@ -7,10 +7,10 @@ export default class Info extends React.Component {
         console.log(this.props)
         return (
             <div>
-                <p>X:{this.props.values.x}</p>
-                <p>Y:{this.props.values.y}</p>
-                <p>Width:{this.props.values.width}</p>
-                <p>Height:{this.props.values.height}</p>
+                <div class="text-monospace p-3 mb-2 bg-warning text-dark text-left font-weight-bolder">X of selected rectangle: {Math.abs(this.props.values.x)}</div>
+                <div class="text-monospace p-3 mb-2 bg-warning text-dark text-left font-weight-bolder">Y of selected rectangle: {Math.abs(this.props.values.y)}</div>
+                <div class="text-monospace p-3 mb-2 bg-warning text-dark text-left font-weight-bolder">Width of selected rectangle: {Math.abs(this.props.values.width)}</div>
+                <div class="text-monospace p-3 mb-2 bg-warning text-dark text-left font-weight-bolder">Height of selected rectangle: {Math.abs(this.props.values.height)}</div>
             </div>
         )
     }
