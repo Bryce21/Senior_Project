@@ -12,7 +12,10 @@ export default class Main extends React.Component {
             processing: false,
             area_height: '',
             rectangles: [{length: "", height: "", quantity: '1'}],
-            points: [],
+            algo_results: {
+                points: [],
+                remaining_area: 0
+            },
             values: {
                 x: 0,
                 y: 0,
@@ -175,7 +178,7 @@ export default class Main extends React.Component {
                     <button className="small">Compute Algorithm</button>
                 </form>
                 <Info values={this.state.values}/>
-                <Konva_Wrapper points={this.state.points} area_length={this.state.area_length}
+                <Konva_Wrapper points={this.state.algo_results.points} area_length={this.state.area_length}
                                area_height={this.state.area_height} handleClick={this.handleClick.bind(this)}/>
             </div>
 
@@ -214,7 +217,7 @@ export default class Main extends React.Component {
             response.text().then((text) => {
                 console.log(text);
                 let data = JSON.parse(text);
-                this.setState({points: data})
+                this.setState({algo_results: data})
             });
         });
     };
