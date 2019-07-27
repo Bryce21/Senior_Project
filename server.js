@@ -88,7 +88,16 @@ function shelf_nf(rectangles, W, H) {
             points.push(new Rectangle(start_x, shelf.horizontal + to_add[1], shelf.vertical, shelf.horizontal))
         }
     }
-    return points
+
+    let used_area = points.reduce(function(prev, cur) {
+        return prev + cur.area;
+    }, 0);
+
+
+    return{
+        points: points,
+        remaining_area: W*H - used_area
+    }
 }
 
 
@@ -100,6 +109,9 @@ function guillotine(rectangles, W, H, split) {
         let to_use = null;
         let fr_index = 0;
         let values = null;
+
+        console.log('Available:');
+        console.log(free_rectangles);
 
         for (let free_rectangle of free_rectangles) {
             values = free_rectangle.getOrientation(rectangle.length, rectangle.height);
@@ -114,18 +126,28 @@ function guillotine(rectangles, W, H, split) {
             continue
         }
 
+
+
         points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + values.length, to_use.y1 + values.height));
         let split_rectangles = to_use.split(values.length, values.height, split);
+
         free_rectangles.splice(fr_index, 1);
         free_rectangles = free_rectangles.concat(split_rectangles);
-        // console.log('Before')
-        // console.log(free_rectangles)
-        // free_rectangles = mergeRectangles(free_rectangles);
-        // console.log('After:')
-        // console.log(free_rectangles)
+
+        free_rectangles = mergeRectangles(free_rectangles);
+
 
     }
-    return points
+    let remaining_area = free_rectangles.reduce(function(prev, cur) {
+        return prev + cur.area;
+    }, 0);
+
+
+
+    return {
+        remaining_area: remaining_area,
+        points: points
+    }
 }
 
 
@@ -163,28 +185,43 @@ function mergeRectangles(free_rectangles) {
 function guillotineBestAreaFit(rectangles, W, H, split) {
     let free_rectangles = [new Rectangle(0, 0, W, H)];
     let points = [];
+
     for (let rectangle of rectangles) {
         let to_use = null;
-        let fr_index = 0;
         let values = null;
+        let selected = null;
+        let correct_values = null;
 
-        for (let free_rectangle of free_rectangles) {
-            values = free_rectangle.getOrientation(rectangle.length, rectangle.height);
-            if (values.fit) to_use = free_rectangle.getMinArea(to_use);
-            fr_index += 1;
+        for(let x = 0; x < free_rectangles.length; x++){
+            values = free_rectangles[x].getOrientation(rectangle.length, rectangle.height);
+            if (values.fit){
+                if(to_use === null || free_rectangles[x].area < to_use.area){
+                    to_use = free_rectangles[x];
+                    selected = x;
+                    correct_values = values;
+                }
+            }
         }
 
         if (to_use == null) {
             continue
         }
+        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + correct_values.length, to_use.y1 + correct_values.height));
 
-        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + values.length, to_use.y1 + values.height));
-        let split_rectangles = to_use.split(values.length, values.height, split);
-
-        free_rectangles.splice(fr_index, 1);
+        let split_rectangles = to_use.split(correct_values.length, correct_values.height, split);
+        free_rectangles.splice(selected, 1);
         free_rectangles = free_rectangles.concat(split_rectangles);
+        free_rectangles = mergeRectangles(free_rectangles);
     }
-    return points
+
+    let remaining_area = free_rectangles.reduce(function(prev, cur) {
+        return prev + cur.area;
+    }, 0);
+
+    return {
+        points: points,
+        remaining_area: remaining_area
+    }
 }
 
 function shuffle(a) {
@@ -300,7 +337,7 @@ class Rectangle {
 
     splitRectangleV(in_W, in_H) {
         let return_array = [];
-        let r1 = new Rectangle(this.x1, in_H + this.y1, this.x1 + in_W, this.y2);
+        let r1 = new Rectangle(this.x1, parseInt(in_H + this.y1), this.x1 + in_W, this.y2);
         let r2 = new Rectangle(this.x1 + in_W, this.y1, this.x2, this.y2);
 
         if(r1.area > 0) return_array.push(r1);
@@ -310,7 +347,6 @@ class Rectangle {
     }
 
     splitRectangleH(in_W, in_H) {
-
         let return_array = [];
         let r1 = new Rectangle(this.x1 + in_W, this.y1, this.x2, this.y1 + in_H);
         let r2 = new Rectangle(this.x1, this.y1 + in_H, this.x2, this.y2);
@@ -325,18 +361,12 @@ class Rectangle {
     split(in_W, in_H, split_choice) {
         switch (split_choice) {
             case('Vertical'):
-                return this.splitRectangleV(in_W, in_H);
+                return this.splitRectangleV(parseFloat(in_W), parseFloat(in_H));
                 break;
             case('Horizontal'):
-                return this.splitRectangleH(in_W, in_H);
+                return this.splitRectangleH(parseFloat(in_W), parseFloat(in_H));
                 break;
         }
-    }
-
-
-    getMinArea(toCompare) {
-        if (toCompare === null || this.area <= toCompare.area) return this;
-        return toCompare;
     }
 }
 
