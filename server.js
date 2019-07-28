@@ -96,7 +96,8 @@ function shelf_nf(rectangles, W, H) {
 
     return{
         points: points,
-        remaining_area: W*H - used_area
+        remaining_area: W*H - used_area,
+        num_rectangles: points.length
     }
 }
 
@@ -146,7 +147,8 @@ function guillotine(rectangles, W, H, split) {
 
     return {
         remaining_area: remaining_area,
-        points: points
+        points: points,
+        num_rectangles: points.length
     }
 }
 
@@ -220,7 +222,8 @@ function guillotineBestAreaFit(rectangles, W, H, split) {
 
     return {
         points: points,
-        remaining_area: remaining_area
+        remaining_area: remaining_area,
+        num_rectangles: points.length
     }
 }
 

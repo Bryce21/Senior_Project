@@ -14,7 +14,8 @@ export default class Main extends React.Component {
             rectangles: [{length: "", height: "", quantity: '1'}],
             algo_results: {
                 points: [],
-                remaining_area: 0
+                remaining_area: 0,
+                num_rectangles: 0
             },
             values: {
                 x: 0,
@@ -23,9 +24,10 @@ export default class Main extends React.Component {
                 height: 0
             },
             algoSelectorValue: 'Guillotine',
-            presort_descending: false
+            presort_descending: false,
 
         };
+        this.fileInput = React.createRef();
     }
 
 
@@ -34,8 +36,6 @@ export default class Main extends React.Component {
             if (idx !== sidx) return rectangle;
             let returnObject = {...rectangle};
             returnObject[evt.target.name] = evt.target.value;
-            console.log(rectangle)
-            console.log(returnObject)
             return returnObject
         });
 
@@ -78,7 +78,6 @@ export default class Main extends React.Component {
                         />
                     </label>
 
-
                     <label>
                         Height:
                         <input
@@ -101,8 +100,6 @@ export default class Main extends React.Component {
                         />
                     </label>
 
-
-
                     <button
                         type="button"
                         onClick={this.handleRemoveRectangle(idx)}
@@ -124,8 +121,6 @@ export default class Main extends React.Component {
     };
 
     render() {
-        console.log(this.state);
-
         return (
             <div>
                 
@@ -163,6 +158,8 @@ export default class Main extends React.Component {
                         />
                     </label>
 
+                    <input type="file" accept=".csv" ref={this.fileInput} onChange={this.getFile}/>
+
                     <hr/>
 
                     {this.renderRectangleInput()}
@@ -177,7 +174,7 @@ export default class Main extends React.Component {
                     </button>
                     <button className="small">Compute Algorithm</button>
                 </form>
-                <Info values={this.state.values}/>
+                <Info values={this.state.values} num_rectangles={this.state.algo_results.num_rectangles} remaining_area={this.state.algo_results.remaining_area}/>
                 <Konva_Wrapper points={this.state.algo_results.points} area_length={this.state.area_length}
                                area_height={this.state.area_height} handleClick={this.handleClick.bind(this)}/>
             </div>
@@ -194,7 +191,44 @@ export default class Main extends React.Component {
         this.setState({
             [name]: value
         });
-    }
+    };
+
+
+    getFile = e => {
+        e.preventDefault();
+        let reader = new FileReader();
+        let file = e.target.files[0];
+        reader.readAsText(file);
+        let allText = null;
+        let self = this;
+
+        reader.onload = function(e){
+            allText = e.target.result;
+            self.processData(allText)
+        }
+
+    };
+
+
+    processData = allText => {
+        let allTextLines = allText.split(/\r\n|\n/);
+        let headers = allTextLines[0].split(',');
+        let lines = [];
+
+        for (let i=1; i<allTextLines.length; i++) {
+            let data = allTextLines[i].split(',');
+            if (data.length === headers.length) {
+
+                let tarr = {};
+                for (let j=0; j<headers.length; j++) {
+                    tarr[headers[j].replace(' ', '')] = parseInt(data[j]);
+                }
+                lines.push(tarr);
+            }
+        }
+        this.setState({rectangles: lines})
+    };
+
 
 
     handleSubmit = async e => {
