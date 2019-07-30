@@ -21,7 +21,8 @@ export default class Main extends React.Component {
                 x: 0,
                 y: 0,
                 width: 0,
-                height: 0
+                height: 0,
+                id: 0
             },
             algoSelectorValue: 'Guillotine',
             presort_descending: false,
@@ -174,13 +175,32 @@ export default class Main extends React.Component {
                     </button>
                     <button className="small">Compute Algorithm</button>
                 </form>
-                <Info values={this.state.values} num_rectangles={this.state.algo_results.num_rectangles} remaining_area={this.state.algo_results.remaining_area}/>
+                <Info values={this.state.values} num_rectangles={this.state.algo_results.num_rectangles} remaining_area={this.state.algo_results.remaining_area} handleRotate={this.handleRotate.bind(this)}/>
                 <Konva_Wrapper points={this.state.algo_results.points} area_length={this.state.area_length}
                                area_height={this.state.area_height} handleClick={this.handleClick.bind(this)}/>
             </div>
 
         );
 
+    }
+
+
+    handleRotate(id){
+        const newPoints = this.state.algo_results.points.map((rectangle, sidx) => {
+            if(rectangle.id !== id) return rectangle;
+            console.log(rectangle);
+            let returnObject = {...rectangle};
+            let temp2 = rectangle.W;
+            returnObject['x2'] = rectangle.x1 + rectangle.H;
+            returnObject['y2'] = rectangle.y1 + rectangle.W;
+            returnObject['W']  = rectangle.H;
+            returnObject['H'] = temp2;
+            return returnObject
+        });
+        let newAlgoResults = {...this.state.algo_results};
+        newAlgoResults['points'] = newPoints;
+
+        this.setState({algo_results : newAlgoResults});
     }
 
     handleInputChange = (event) =>  {
@@ -234,6 +254,10 @@ export default class Main extends React.Component {
     handleSubmit = async e => {
         e.preventDefault();
         console.log('Handle submit called');
+
+        let intermediate = {...this.state.algo_results};
+        intermediate.points = [];
+        this.setState({algo_results: intermediate});
 
         await fetch('/api/algorithms', {
             method: 'POST',

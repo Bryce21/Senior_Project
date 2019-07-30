@@ -23,6 +23,7 @@ export default class Konva_Wrapper extends React.Component {
                     width={rectangle.x2 - rectangle.x1}
                     height={rectangle.y2 - rectangle.y1}
                     color={Konva.Util.getRandomColor()}
+                    id={rectangle.id}
                     draggable={true}
                     handleClick={this.props.handleClick}
                 />

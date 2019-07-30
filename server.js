@@ -2,37 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 5000;
-const path = require('path')
 
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-// Serve static files from the React frontend app
-// app.use(express.static(path.join(__dirname, '/build')))// Anything that doesn't match the above, send back index.html
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname + '/build/index.html'))
-// });
-//
-// app.use((req, res, next) => {
-//     res.header(
-//         "Access-Control-Allow-Origin",
-//         "http://deploytestomega.herokuapp.com"
-//     );
-//     res.header(
-//         "Access-Control-Allow-Headers",
-//         "Origin, X-Requested-With, Content-Type, Accept"
-//     );
-//     next();
-// });
-
-
 app.post('/api/algorithms', (req, res) => {
     console.log('recieve post request');
     console.log(req.body);
     let result = null;
-    console.log(req.body);
     let rectangles_to_use = [];
 
 
@@ -67,7 +46,7 @@ app.post('/api/algorithms', (req, res) => {
 function shelf_nf(rectangles, W, H) {
     let shelf = null;
     let points = [];
-
+    let id = 0;
 
     for (let rectangle of rectangles) {
         let to_add = [Math.max(rectangle.length, rectangle.height), Math.min(rectangle.length, rectangle.height)];
@@ -85,7 +64,8 @@ function shelf_nf(rectangles, W, H) {
             shelf.vertical += to_add[0];
             let start_x = shelf.vertical - to_add[0];
             if (start_x < 0) start_x = 0;
-            points.push(new Rectangle(start_x, shelf.horizontal + to_add[1], shelf.vertical, shelf.horizontal))
+            points.push(new Rectangle(start_x, shelf.horizontal + to_add[1], shelf.vertical, shelf.horizontal, id))
+            id++;
         }
     }
 
@@ -104,15 +84,14 @@ function shelf_nf(rectangles, W, H) {
 
 function guillotine(rectangles, W, H, split) {
     let free_rectangles = [new Rectangle(0, 0, W, H)];
-    let points = []
+    let points = [];
+    let id = 0;
     for (let rectangle of rectangles) {
 
         let to_use = null;
         let fr_index = 0;
         let values = null;
 
-        console.log('Available:');
-        console.log(free_rectangles);
 
         for (let free_rectangle of free_rectangles) {
             values = free_rectangle.getOrientation(rectangle.length, rectangle.height);
@@ -129,7 +108,8 @@ function guillotine(rectangles, W, H, split) {
 
 
 
-        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + values.length, to_use.y1 + values.height));
+        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + values.length, to_use.y1 + values.height, id));
+        id++;
         let split_rectangles = to_use.split(values.length, values.height, split);
 
         free_rectangles.splice(fr_index, 1);
@@ -187,7 +167,7 @@ function mergeRectangles(free_rectangles) {
 function guillotineBestAreaFit(rectangles, W, H, split) {
     let free_rectangles = [new Rectangle(0, 0, W, H)];
     let points = [];
-
+    let id = 0;
     for (let rectangle of rectangles) {
         let to_use = null;
         let values = null;
@@ -208,8 +188,8 @@ function guillotineBestAreaFit(rectangles, W, H, split) {
         if (to_use == null) {
             continue
         }
-        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + correct_values.length, to_use.y1 + correct_values.height));
-
+        points.push(new Rectangle(to_use.x1, to_use.y1, to_use.x1 + correct_values.length, to_use.y1 + correct_values.height, id));
+        id++;
         let split_rectangles = to_use.split(correct_values.length, correct_values.height, split);
         free_rectangles.splice(selected, 1);
         free_rectangles = free_rectangles.concat(split_rectangles);
@@ -246,11 +226,13 @@ class Shelf {
 
 
 class Rectangle {
-    constructor(x1, y1, x2, y2) {
+    constructor(x1, y1, x2, y2, id) {
+
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this.id = id;
         this.W = this.x2 - this.x1;
         this.H = this.y2 - this.y1;
         this.area = this.W * this.H;

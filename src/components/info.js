@@ -15,6 +15,7 @@ export default class Info extends React.Component {
                     Number of rectangles used: {this.props.num_rectangles}</div>
                 <div className="text-monospace p-3 mb-2 bg-warning text-dark text-left font-weight-bolder">
                     Blank area: {this.props.remaining_area}</div>
+                <button onClick={() => {this.props.handleRotate(this.props.values.id)}}>Rotate</button>
             </div>
         )
     }
